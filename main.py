@@ -1,7 +1,3 @@
-
-"""
-
-"""
 import os
 import sys
 import ipaddress
@@ -138,7 +134,7 @@ def make_api_request(url, method, headers=None, data=None):
         return response
     except requests.exceptions.RequestException as http_error:
         print(f"An error occurred: {http_error}")
-        return None
+        #return None
 
 
 def forti_policy_finder(host, ip_list_validated, result_file):
@@ -257,14 +253,13 @@ def forti_policy_finder(host, ip_list_validated, result_file):
             pid_action = pid["action"]
             pid_status = pid["status"]
             pid_services = list(map(lambda x: x['name'], pid["service"]))
-            pid_srcint = pid["srcintf"][0]["name"]
-            pid_dstint = pid["dstintf"][0]["name"]
+            pid_srcint = list(map(lambda x: x["name"], pid["srcintf"]))
+            pid_dstint = list(map(lambda x: x["name"], pid["dstintf"]))
+            srcint_check = filtered_zone in pid_srcint or filtered_interface in pid_srcint
             if pid_status == "enable":
                 for grp in founded_grp_list:
                     srcaddr_check = grp in pid_srcaddr
                     dstaddr_check = grp in pid_dstaddr
-                    srcint_check = (
-                        filtered_zone or filtered_interface) in pid_srcint
                     if grp == "all" and pid_action == "deny":
                         pass
                     elif srcaddr_check and srcint_check:
