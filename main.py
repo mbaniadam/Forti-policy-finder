@@ -134,7 +134,7 @@ def make_api_request(url, method, headers=None, data=None):
         return response
     except requests.exceptions.RequestException as http_error:
         print(f"An error occurred: {http_error}")
-        #return None
+        return None
 
 
 def forti_policy_finder(host, ip_list_validated, result_file):
