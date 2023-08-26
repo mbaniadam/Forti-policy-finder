@@ -1,11 +1,13 @@
 # FortiGate Policy Dependency Finder
+
+<img src="https://github.com/mbaniadam/Forti-policy-finder/assets/75830370/d5d909fe-d158-49d0-b53b-e2de80dc279d" width="200">
+
 #### The FortiGate Policy Dependency Finder is a Python script that leverages Fortinet FortiGate APIs to discover policies related to specific IP addresses. 
 #### This tool helps identify address dependencies, address groups, interfaces, and policies linked to the provided IP addresses.
 
 
 
 
-![image](https://github.com/mbaniadam/Forti-policy-finder/assets/75830370/d5d909fe-d158-49d0-b53b-e2de80dc279d)
 
 
 ## Table of Contents
