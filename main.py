@@ -168,31 +168,36 @@ def forti_policy_finder(host, ip_list_validated, result_file):
     port = host["port"]
     access_token = host["token"]
     headers = {"Authorization": "Bearer " + access_token, }
+    if host["vdom"]:
+        and_host_vdom = f'&vdom={host["vdom"]}'
+        host_vdom = f'?vdom={host["vdom"]}'
+    else:
+        and_host_vdom = ""
     # Write header for device in csv file
-    result_file.writerow([host["host"]])
+    result_file.writerow(f'------- Device: {host["host"]}')
     # Get all address
-    url_all_addr = f'https://{device_ip}:{port}/api/v2/cmdb/firewall/address/?format=name|subnet|type&filter=type==ipmask'
+    url_all_addr = f'https://{device_ip}:{port}/api/v2/cmdb/firewall/address/?format=name|subnet|type&filter=type==ipmask{and_host_vdom}'
     response_all_addr_check = make_api_request(
         url_all_addr, "GET", headers).json()["results"]
     # get interfaces to find vlan of ip address
-    url_all_interfaces = f'https://{device_ip}:{port}/api/v2/cmdb/system/interface/?format=ip|name'
+    url_all_interfaces = f'https://{device_ip}:{port}/api/v2/cmdb/system/interface/?format=ip|name{and_host_vdom}'
     response_interface_check = make_api_request(
         url_all_interfaces, "GET", headers).json()["results"]
     all_interfaces = list(
         map(lambda x: {**x, "ip": x["ip"].replace(' ', '/')}, response_interface_check))
     # Find zones
-    url_all_zones = f'https://{device_ip}:{port}/api/v2/cmdb/system/zone/?format=name|interface'
+    url_all_zones = f'https://{device_ip}:{port}/api/v2/cmdb/system/zone/?format=name|interface{and_host_vdom}'
     response_zone_check = make_api_request(
         url_all_zones, "GET", headers).json()["results"]
     # Find subnets and replace space with slash in subnet value for use in subnet_of() function
     all_subnet = list(map(lambda x: {
         **x, "subnet": x["subnet"].replace(' ', '/')}, response_all_addr_check))
     # Get all groups
-    url_addrgrp = f"https://{device_ip}:{port}/api/v2/cmdb/firewall/addrgrp/?format=name|member"
+    url_addrgrp = f'https://{device_ip}:{port}/api/v2/cmdb/firewall/addrgrp/?format=name|member{and_host_vdom}'
     response_grp_check = make_api_request(
         url_addrgrp, "GET", headers).json()["results"]
     # Get all policies
-    url_all_policy = f'https://{device_ip}:{port}/api/v2/cmdb/firewall/policy/'
+    url_all_policy = f'https://{device_ip}:{port}/api/v2/cmdb/firewall/policy/{host_vdom}'
     result_url_all_policy = make_api_request(
         url_all_policy, "GET", headers).json()["results"]
     for ip_with_cidr in ip_list_validated:
@@ -217,6 +222,8 @@ def forti_policy_finder(host, ip_list_validated, result_file):
                 for subnet in subnet_check:
                     if res_group["name"] not in founded_grp_list and subnet['name'] == member["name"]:
                         founded_grp_list.append(res_group["name"])
+        print("------- List of groups containing ip:", founded_grp_list)
+        result_file.writerow(["------- List of groups containing ip:", founded_grp_list])
         # Add matched subnet name with the ip address to the list
         for subnet in subnet_check:
             founded_grp_list.append(subnet['name'])
@@ -264,14 +271,20 @@ def forti_policy_finder(host, ip_list_validated, result_file):
                         pass
                     elif srcaddr_check and srcint_check:
                         result_file.writerow([
-                            pid_policyid, ip_without_cidr, pid_dstaddr, pid_srcint,
+                            pid_policyid, f'{ip_without_cidr} or Group', pid_dstaddr, pid_srcint,
                             pid_dstint, pid_services, pid_schedule, pid_action
                         ])
                     elif dstaddr_check:
                         result_file.writerow([
-                            pid_policyid, pid_srcaddr, ip_without_cidr, pid_srcint,
+                            pid_policyid, pid_srcaddr, f'{ip_without_cidr} or Group', pid_srcint,
                             pid_dstint, pid_services, pid_schedule, pid_action
                         ])
+                    elif srcaddr_check:
+                        result_file.writerow([
+                            pid_policyid, f'{ip_without_cidr} or Group', pid_dstaddr, pid_srcint,
+                            pid_dstint, pid_services, pid_schedule, pid_action
+                        ])
+
     print(
         f"\n    Finished! you can see result in:\
                 {os.path.join(path, 'Dependencies_Result.csv')}")
