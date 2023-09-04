@@ -5,7 +5,6 @@ hosts:
       port: 443
       device_type: fortinet
       token: ""
-      vdom: ""
       
     # hostname: Site2-Fortigate_Primary 
     - host: 192.168.200.1
