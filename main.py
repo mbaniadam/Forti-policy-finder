@@ -277,11 +277,6 @@ def forti_policy_finder(host, ip_list_validated, result_file):
                             pid_policyid, pid_srcaddr, f'{ip_without_cidr} or Group', pid_srcint,
                             pid_dstint, pid_services, pid_schedule, pid_action
                         ])
-                    elif srcaddr_check:
-                        result_file.writerow([
-                            pid_policyid, f'{ip_without_cidr} or Group', pid_dstaddr, pid_srcint,
-                            pid_dstint, pid_services, pid_schedule, pid_action
-                        ])
 
     print(
         f"\n    Finished! you can see result in:\
